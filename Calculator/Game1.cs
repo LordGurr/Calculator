@@ -172,6 +172,9 @@ namespace Calculator
                     DrawLine(_spriteBatch, new Vector2((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(-10, 0)).X), (i)), new Vector2((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(Window.ClientBounds.Width + 10, 0)).X), (i)), myLineWidth);
                     lines++;
                 }
+                else
+                {
+                }
             }
             int vertical = 0;
             for (int i = GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).X), gridSize); i < GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(Window.ClientBounds.Width, 0)).X), gridSize) + gridSize; i += gridSize)
@@ -182,6 +185,9 @@ namespace Calculator
                     DrawLine(_spriteBatch, new Vector2((i), (int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, -10)).Y)), new Vector2((i), (int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, Window.ClientBounds.Height + 10)).Y)), myLineWidth);
                     lines++;
                     vertical++;
+                }
+                else
+                {
                 }
             }
         }
