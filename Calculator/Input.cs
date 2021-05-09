@@ -26,6 +26,14 @@ namespace Calculator
         public static int differenceScrollWheelValue { private set; get; }
         public static Vector2 directional { private set; get; }
         public static Vector2 normalizedDirectional { private set; get; }
+        private static int minScrollWheel;
+        private static int maxScrollWheel;
+
+        public static void setCameraStuff(Camera camera)
+        {
+            maxScrollWheel = (int)Math.Round((camera.maxZoom - 1) / 0.001f);
+            minScrollWheel = (int)Math.Round((camera.minZoom - 1) / 0.001f);
+        }
 
         public static KeyboardState GetState()
         {
@@ -47,7 +55,8 @@ namespace Calculator
             }
 
             clampedScrollWheelValue += differenceScrollWheelValue;
-            clampedScrollWheelValue = MathHelper.Clamp(clampedScrollWheelValue, -720, 1680);
+            //clampedScrollWheelValue = MathHelper.Clamp(clampedScrollWheelValue, -720, 1680);
+            clampedScrollWheelValue = MathHelper.Clamp(clampedScrollWheelValue, minScrollWheel, maxScrollWheel);
             //Vector2 input = new Vector2();
             directional = new Vector2();
             directional += new Vector2(0, GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed ? 1 : 0);

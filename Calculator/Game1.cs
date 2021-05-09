@@ -40,6 +40,8 @@ namespace Calculator
             camera = new Camera(new Viewport(new Rectangle(_graphics.PreferredBackBufferWidth / 2, _graphics.PreferredBackBufferHeight / 2, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight)), Window);
             camera.Zoom = 4;
             position = new Vector2();
+            Window.TextInput += TextInputHandler;
+            Input.setCameraStuff(camera);
             base.Initialize();
         }
 
@@ -336,6 +338,17 @@ namespace Calculator
             }
 
             lastMousePosition = Input.MousePos();
+        }
+
+        private string input = string.Empty;
+
+        private void TextInputHandler(object sender, TextInputEventArgs args)
+        {
+            var pressedKey = args.Key;
+            var character = args.Character;
+            input += character;
+            // do something with the character (and optionally the key)
+            // ...
         }
     }
 }

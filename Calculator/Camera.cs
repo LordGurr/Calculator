@@ -12,6 +12,8 @@ namespace Calculator
         {
             viewport = _viewport;
             Window = _Window;
+            maxZoom = 5;
+            minZoom = 0.2f;
         }
 
         public Matrix transform { get; private set; }
@@ -22,6 +24,9 @@ namespace Calculator
         private Viewport viewport;
         private GameWindow Window;
 
+        public float maxZoom { private set; get; }
+        public float minZoom { private set; get; }
+
         public float Zoom
         {
             get
@@ -31,10 +36,10 @@ namespace Calculator
             set
             {
                 zoom = value;
-                if (zoom > 5 || zoom < 0.3f)
+                if (zoom > maxZoom || zoom < minZoom)
                 {
                 }
-                zoom = MathHelper.Clamp(zoom, 0.3f, 5);
+                zoom = MathHelper.Clamp(zoom, minZoom, maxZoom);
                 //zoom = zoom < 0.3f ? 0.3f : zoom;
             }
         }
