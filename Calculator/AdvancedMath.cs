@@ -567,6 +567,11 @@ namespace Calculator
             return expression;
         }
 
+        public static void ResetX()
+        {
+            mathConst[mathConst.Length - 1] = "x";
+        }
+
         public static bool ContainsNewCons(string expression, char constant)
         {
             for (int i = 0; i < expression.Length; i++)

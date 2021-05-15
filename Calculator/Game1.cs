@@ -17,6 +17,7 @@ namespace Calculator
         private SpriteFont font;
         private int lines = 0;
         private List<List<Vector2>> allEquations = new List<List<Vector2>>();
+        private List<Tuple<InputBox, List<Vector2>>> inputButtons;
 
         public Game1()
         {
@@ -43,7 +44,8 @@ namespace Calculator
             camera = new Camera(new Viewport(new Rectangle(_graphics.PreferredBackBufferWidth / 2, _graphics.PreferredBackBufferHeight / 2, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight)), Window);
             camera.Zoom = 4;
             position = new Vector2();
-            Window.TextInput += TextInputHandler;
+            //Window.TextInput += TextInputHandler;
+            inputButtons = new List<Tuple<InputBox, List<Vector2>>>();
             Input.setCameraStuff(camera);
             base.Initialize();
         }
@@ -53,6 +55,7 @@ namespace Calculator
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             square = Content.Load<Texture2D>("Square1");
             font = Content.Load<SpriteFont>("font");
+            inputButtons.Add(new Tuple<InputBox, List<Vector2>>(new InputBox(new Rectangle(20, 20, 300, 100), square, "", Color.Green, false), new List<Vector2>()));
 
             _graphics.IsFullScreen = false;
             _graphics.ApplyChanges();
@@ -66,7 +69,29 @@ namespace Calculator
                 Input.GetState(true);
                 if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                     Exit();
-
+                for (int i = 0; i < inputButtons.Count; i++)
+                {
+                    inputButtons[i].Item1.Selected(Window);
+                    if (inputButtons[i].Item1.Modified())
+                    {
+                        List<Vector2> temp = new List<Vector2>();
+                        try
+                        {
+                            SetEquation(temp, -40, 80, inputButtons[i].Item1.text);
+                            inputButtons[i].Item2.Clear();
+                            for (int a = 0; a < temp.Count; a++)
+                            {
+                                inputButtons[i].Item2.Add(temp[a]);
+                            }
+                            inputButtons[i].Item1.modifiedText = false;
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.WriteLine("Failed to update graph: " + e.Message);
+                            inputButtons[i].Item2.Clear();
+                        }
+                    }
+                }
                 // TODO: Add your update logic here
                 camera.Zoom = (float)(Input.clampedScrollWheelValue * 0.001) + 1;
                 camera.UpdateCamera(position);
@@ -114,6 +139,16 @@ namespace Calculator
                     }
                 }
             }
+            for (int i = 0; i < inputButtons.Count; i++)
+            {
+                for (int a = 0; a < inputButtons[i].Item2.Count; a++)
+                {
+                    if (a + 1 < inputButtons[i].Item2.Count)
+                    {
+                        DrawLine(_spriteBatch, inputButtons[i].Item2[a], inputButtons[i].Item2[a + 1], (int)(width * 1.5), i < färger.Count ? färger[i] : Color.Blue);
+                    }
+                }
+            }
             _spriteBatch.Draw(square, new Rectangle(300, 300, 200, 200), Color.Red);
             //Vector2 right = AdvancedMath.Right(AdvancedMath.AngleBetween(new Vector2(), camera.ScreenToWorldSpace(Input.MousePos())));
             //DrawLine(_spriteBatch, new Vector2(0, 0) * (5 * right), camera.ScreenToWorldSpace(Input.MousePos()) * (5 * right));
@@ -145,7 +180,6 @@ namespace Calculator
             //        _spriteBatch.Draw(jordTile, new Vector2(i, a), null, Color.White, 0, new Vector2(7.5f, -0), 2, SpriteEffects.None, 1);
             //    }
             //}
-
             _spriteBatch.End();
             _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp);
             _spriteBatch.DrawString(font, "pos: " + position.ToString(), new Vector2(5, 5), Color.Red);
@@ -154,7 +188,17 @@ namespace Calculator
             _spriteBatch.DrawString(font, "rest: " + (camera.ScreenToWorldSpace(new Vector2()).Y % width).ToString(), new Vector2(5, 65), Color.Red);
             _spriteBatch.DrawString(font, "nearest: " + (AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).Y), size)).ToString(), new Vector2(5, 85), Color.Red);
             _spriteBatch.DrawString(font, "zoom: " + (camera.Zoom).ToString(), new Vector2(5, 105), Color.Red);
-
+            for (int i = 0; i < inputButtons.Count; i++)
+            {
+                inputButtons[i].Item1.Draw(_spriteBatch, font);
+                //for (int a = 0; a < inputButtons[i].Item2.Count; a++)
+                //{
+                //    if (a + 1 < inputButtons[i].Item2.Count)
+                //    {
+                //        DrawLine(_spriteBatch, inputButtons[i].Item2[a], inputButtons[i].Item2[a], (int)(width * 1.5), i < färger.Count ? färger[i] : Color.Blue);
+                //    }
+                //}
+            }
             _spriteBatch.End();
             base.Draw(gameTime);
         }
@@ -256,6 +300,7 @@ namespace Calculator
                     string newExpress = AdvancedMath.ReplaceXWithConstant(expression, y, "y");
                     curEquation.Add(new Vector2(((float)AdvancedMath.Eval(newExpress) * width), -y * width));
                 }
+                AdvancedMath.ResetX();
             }
         }
 
