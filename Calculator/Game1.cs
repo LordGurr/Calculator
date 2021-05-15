@@ -33,7 +33,8 @@ namespace Calculator
             allEquations.Add(new List<Vector2>());
             OtherEquation(allEquations[1], -40, 80);
             allEquations.Add(new List<Vector2>());
-            SetEquation(allEquations[allEquations.Count - 1], -40, 80, "2y");
+            SetEquation(allEquations[allEquations.Count - 1], -40, 80, "sin(yrad2deg)");
+            input = "25y";
         }
 
         protected override void Initialize()
@@ -151,7 +152,7 @@ namespace Calculator
             _spriteBatch.DrawString(font, "mousePos: " + Input.MousePos().ToString(), new Vector2(5, 25), Color.Red);
             _spriteBatch.DrawString(font, "lines: " + lines.ToString(), new Vector2(5, 45), Color.Red);
             _spriteBatch.DrawString(font, "rest: " + (camera.ScreenToWorldSpace(new Vector2()).Y % width).ToString(), new Vector2(5, 65), Color.Red);
-            _spriteBatch.DrawString(font, "nearest: " + (GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).Y), size)).ToString(), new Vector2(5, 85), Color.Red);
+            _spriteBatch.DrawString(font, "nearest: " + (AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).Y), size)).ToString(), new Vector2(5, 85), Color.Red);
             _spriteBatch.DrawString(font, "zoom: " + (camera.Zoom).ToString(), new Vector2(5, 105), Color.Red);
 
             _spriteBatch.End();
@@ -160,13 +161,13 @@ namespace Calculator
 
         private void DrawGridOld(int gridSize, int lineWidth)
         {
-            for (int i = GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).Y), gridSize); i < GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, Window.ClientBounds.Height)).Y), gridSize); i += gridSize)
+            for (int i = AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).Y), gridSize); i < AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, Window.ClientBounds.Height)).Y), gridSize); i += gridSize)
             {
                 DrawLine(_spriteBatch, new Vector2((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).X), (i)), new Vector2((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(Window.ClientBounds.Width, 0)).X), (i)), lineWidth);
                 lines++;
             }
             int vertical = 0;
-            for (int i = GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).X), gridSize); i < GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(Window.ClientBounds.Width, 0)).X), gridSize); i += gridSize)
+            for (int i = AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).X), gridSize); i < AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(Window.ClientBounds.Width, 0)).X), gridSize); i += gridSize)
             {
                 DrawLine(_spriteBatch, new Vector2((i), (int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).Y)), new Vector2((i), (int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, Window.ClientBounds.Height)).Y)), lineWidth);
                 lines++;
@@ -176,10 +177,10 @@ namespace Calculator
 
         private void DrawGrid(int gridSize, int lineWidth)
         {
-            for (int i = GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).Y), gridSize); i < GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, Window.ClientBounds.Height)).Y), gridSize) + gridSize; i += gridSize)
+            for (int i = AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).Y), gridSize); i < AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, Window.ClientBounds.Height)).Y), gridSize) + gridSize; i += gridSize)
             {
                 int myLineWidth = i / gridSize % 5 == 0 ? i / gridSize % 25 == 0 ? lineWidth * 2 : lineWidth : lineWidth / 2;
-                if ((float)myLineWidth * (float)camera.Zoom > 0.7f)
+                if ((float)myLineWidth * (float)camera.Zoom > 0.9f)
                 {
                     DrawLine(_spriteBatch, new Vector2((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(-10, 0)).X), (i)), new Vector2((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(Window.ClientBounds.Width + 10, 0)).X), (i)), myLineWidth);
                     lines++;
@@ -189,10 +190,10 @@ namespace Calculator
                 }
             }
             int vertical = 0;
-            for (int i = GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).X), gridSize); i < GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(Window.ClientBounds.Width, 0)).X), gridSize) + gridSize; i += gridSize)
+            for (int i = AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).X), gridSize); i < AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(Window.ClientBounds.Width, 0)).X), gridSize) + gridSize; i += gridSize)
             {
                 int myLineWidth = i / gridSize % 5 == 0 ? i / gridSize % 25 == 0 ? lineWidth * 2 : lineWidth : lineWidth / 2;
-                if ((float)myLineWidth * (float)camera.Zoom > 0.7f)
+                if ((float)myLineWidth * (float)camera.Zoom > 0.9f)
                 {
                     DrawLine(_spriteBatch, new Vector2((i), (int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, -10)).Y)), new Vector2((i), (int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, Window.ClientBounds.Height + 10)).Y)), myLineWidth);
                     lines++;
@@ -202,14 +203,6 @@ namespace Calculator
                 {
                 }
             }
-        }
-
-        private int GetNearestMultiple(int value, int factor)
-        {
-            return (int)Math.Round(
-                              (value / (double)factor),
-                              MidpointRounding.AwayFromZero
-                          ) * factor;
         }
 
         private void Equation(List<Vector2> curEquation, int start, int iterations)
@@ -388,6 +381,7 @@ namespace Calculator
             {
                 Exit();
             }
+            //SetEquation(allEquations[allEquations.Count - 1], -40, 80, input);
             // do something with the character (and optionally the key)
             // ...
         }

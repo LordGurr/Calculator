@@ -579,5 +579,13 @@ namespace Calculator
             }
             return false;
         }
+
+        public static int GetNearestMultiple(int value, int factor)
+        {
+            return (int)Math.Round(
+                              (value / (double)factor),
+                              MidpointRounding.AwayFromZero
+                          ) * factor;
+        }
     }
 }
