@@ -35,7 +35,7 @@ namespace Calculator
             minScrollWheel = (int)Math.Round((camera.minZoom - 1) / 0.001f);
         }
 
-        public static KeyboardState GetState()
+        public static KeyboardState GetState(bool updateScrollWheel)
         {
             previousKeyState = currentKeyState;
             currentKeyState = Microsoft.Xna.Framework.Input.Keyboard.GetState();
@@ -53,10 +53,12 @@ namespace Calculator
             if (Math.Abs(differenceScrollWheelValue) > 10)
             {
             }
-
-            clampedScrollWheelValue += differenceScrollWheelValue;
-            //clampedScrollWheelValue = MathHelper.Clamp(clampedScrollWheelValue, -720, 1680);
-            clampedScrollWheelValue = MathHelper.Clamp(clampedScrollWheelValue, minScrollWheel, maxScrollWheel);
+            if (updateScrollWheel)
+            {
+                clampedScrollWheelValue += differenceScrollWheelValue;
+                //clampedScrollWheelValue = MathHelper.Clamp(clampedScrollWheelValue, -720, 1680);
+                clampedScrollWheelValue = MathHelper.Clamp(clampedScrollWheelValue, minScrollWheel, maxScrollWheel);
+            }
             //Vector2 input = new Vector2();
             directional = new Vector2();
             directional += new Vector2(0, GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed ? 1 : 0);

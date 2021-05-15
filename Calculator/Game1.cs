@@ -32,6 +32,8 @@ namespace Calculator
             Equation(allEquations[0], -40, 80);
             allEquations.Add(new List<Vector2>());
             OtherEquation(allEquations[1], -40, 80);
+            allEquations.Add(new List<Vector2>());
+            SetEquation(allEquations[allEquations.Count - 1], -40, 80, "2y");
         }
 
         protected override void Initialize()
@@ -58,14 +60,22 @@ namespace Calculator
 
         protected override void Update(GameTime gameTime)
         {
-            Input.GetState();
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+            if (IsActive)
+            {
+                Input.GetState(true);
+                if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                    Exit();
 
-            // TODO: Add your update logic here
-            camera.Zoom = (float)(Input.clampedScrollWheelValue * 0.001) + 1;
-            camera.UpdateCamera(position);
-            UpdateMouse(gameTime);
+                // TODO: Add your update logic here
+                camera.Zoom = (float)(Input.clampedScrollWheelValue * 0.001) + 1;
+                camera.UpdateCamera(position);
+                UpdateMouse(gameTime);
+            }
+            else
+            {
+                Input.GetState(false);
+                lastMousePosition = Input.MousePos();
+            }
             base.Update(gameTime);
         }
 
@@ -233,6 +243,29 @@ namespace Calculator
             }
         }
 
+        private void SetEquation(List<Vector2> curEquation, int start, int iterations, string expression)
+        {
+            curEquation.Clear();
+            int width = 50;
+            iterations += start;
+            if (!AdvancedMath.ContainsNewCons(expression, 'y'))
+            {
+                for (float x = start; x <= iterations; x += 0.25f)
+                {
+                    string newExpress = AdvancedMath.ReplaceXWithConstant(expression, x, "x");
+                    curEquation.Add(new Vector2(x * width, -((float)AdvancedMath.Eval(newExpress) * width)));
+                }
+            }
+            else
+            {
+                for (float y = start; y <= iterations; y += 0.25f)
+                {
+                    string newExpress = AdvancedMath.ReplaceXWithConstant(expression, y, "y");
+                    curEquation.Add(new Vector2(((float)AdvancedMath.Eval(newExpress) * width), -y * width));
+                }
+            }
+        }
+
         private void DrawLine(SpriteBatch sb, Vector2 start, Vector2 end)
         {
             Vector2 edge = end - start;
@@ -283,6 +316,10 @@ namespace Calculator
 
         private void DrawLine(SpriteBatch sb, Vector2 start, Vector2 end, int width, Color color)
         {
+            if (float.IsNaN(start.X) || float.IsNaN(start.Y) || float.IsNaN(end.X) || float.IsNaN(end.Y))
+            {
+                return;
+            }
             Vector2 edge = end - start;
             // calculate angle to rotate line
             float angle =
@@ -312,9 +349,9 @@ namespace Calculator
 
         private void UpdateMouse(GameTime gameTime)
         {
-            if (Input.GetMouseButtonDown(2) && !enableMouseDragging)
+            if ((Input.GetMouseButtonDown(2) || Input.GetMouseButtonDown(0)) && !enableMouseDragging)
                 enableMouseDragging = true;
-            else if (Input.GetMouseButtonUp(2) && enableMouseDragging)
+            else if ((Input.GetMouseButtonUp(2) && !Input.GetMouseButton(0) || Input.GetMouseButtonUp(0) && !Input.GetMouseButton(2)) && enableMouseDragging)
                 enableMouseDragging = false;
 
             if (enableMouseDragging)
@@ -347,6 +384,10 @@ namespace Calculator
             var pressedKey = args.Key;
             var character = args.Character;
             input += character;
+            if (args.Key == Keys.Escape)
+            {
+                Exit();
+            }
             // do something with the character (and optionally the key)
             // ...
         }
