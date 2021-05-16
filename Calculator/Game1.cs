@@ -395,7 +395,12 @@ namespace Calculator
                 //    width = AdvancedMath.GetNearestMultiple(50 * Window.ClientBounds.Width, gridSize);
                 //}
                 int start = ((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, 0)).X / gridSize, MidpointRounding.AwayFromZero));
-                SetEquation(curEquation, start - 50, Math.Abs(width - start) + 50 * 2, expression, 1f / (camera.Zoom * 2.5f));
+                float timeStep = (float)(-Math.Pow(camera.Zoom, 1.7f) / 23f + 0.7f);
+                if (expression.Contains("tan"))
+                {
+                    timeStep = Math.Clamp(timeStep, 0.01f, 0.04f);
+                }
+                SetEquation(curEquation, start - 50, Math.Abs(width - start) + 50 * 2, expression, timeStep);
             }
             else
             {
