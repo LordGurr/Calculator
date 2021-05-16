@@ -89,6 +89,11 @@ namespace Calculator
             //Matrix.CreateTranslation(viewport.Width / 2, viewport.Height / 2, 0);
         }
 
+        public Vector2 CameraPos()
+        {
+            return new Vector2(transform.Translation.X, transform.Translation.Y);
+        }
+
         //public Vector2Dec ScreenToWorldSpace(in Vector2Dec point)
         //{
         //    try

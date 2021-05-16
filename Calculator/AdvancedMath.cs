@@ -207,7 +207,7 @@ namespace Calculator
         (a1) => Math.Abs(a1),
         (a1) => Math.Sqrt(a1),
         (a1) => Math.Log10(a1),
-        (a1) => Math.Round(a1, MidpointRounding.ToZero),
+        (a1) => Math.Round(a1, MidpointRounding.AwayFromZero),
         (a1) => Math.Log(a1),
         };
 
@@ -481,14 +481,14 @@ namespace Calculator
         {
             for (int i = 0; i < mathConst.Length; i++)
             {
-                if (c == mathConst[i][0] && input.Substring(index).ToLower().Contains(mathConst[i]))
+                if (c == mathConst[i][0] && (input.Length - index > mathConst[i].Length ? input.Substring(index, mathConst[i].Length).ToLower().Contains(mathConst[i]) : input.Substring(index).ToLower().Contains(mathConst[i])))
                 {
                     return mathConst[i].Length;
                 }
             }
             for (int i = 0; i < preParenthesis.Length; i++)
             {
-                if (c == preParenthesis[i][0] && input.Substring(index).ToLower().Contains(preParenthesis[i]))
+                if (c == preParenthesis[i][0] && (input.Length - index > mathConst[i].Length ? input.Substring(index, preParenthesis[i].Length).ToLower().Contains(preParenthesis[i]) : input.Substring(index).ToLower().Contains(preParenthesis[i])))
                 {
                     return preParenthesis[i].Length;
                 }
@@ -500,14 +500,14 @@ namespace Calculator
         {
             for (int i = 0; i < mathConst.Length; i++)
             {
-                if (c == mathConst[i][0] && input.Substring(index).ToLower().Contains(mathConst[i]))
+                if (c == mathConst[i][0] && (input.Length - index > mathConst[i].Length ? input.Substring(index, mathConst[i].Length).ToLower().Contains(mathConst[i]) : input.Substring(index).ToLower().Contains(mathConst[i])))
                 {
                     return true;
                 }
             }
             for (int i = 0; i < preParenthesis.Length; i++)
             {
-                if (c == preParenthesis[i][0] && input.Substring(index).ToLower().Contains(preParenthesis[i]))
+                if (c == preParenthesis[i][0] && (input.Length - index > mathConst[i].Length ? input.Substring(index, preParenthesis[i].Length).ToLower().Contains(preParenthesis[i]) : input.Substring(index).ToLower().Contains(preParenthesis[i])))
                 {
                     return true;
                 }

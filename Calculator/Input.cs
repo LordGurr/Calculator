@@ -162,5 +162,10 @@ namespace Calculator
         {
             return new Vector2(currentMouseState.Position.X, currentMouseState.Position.Y);
         }
+
+        public static Vector2 MouseDiff()
+        {
+            return new Vector2(currentMouseState.Position.X - previousMouseState.Position.X, currentMouseState.Position.Y - previousMouseState.Position.Y);
+        }
     }
 }

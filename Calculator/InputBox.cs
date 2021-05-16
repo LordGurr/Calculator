@@ -90,6 +90,27 @@ namespace Calculator
             return isSelected;
         }
 
+        public void SetSelected(GameWindow window, bool toBe)
+        {
+            bool previosly = isSelected;
+            isSelected = toBe;
+            if (previosly != isSelected)
+            {
+                if (isSelected)
+                {
+                    window.TextInput += TextInputHandler;
+                    window.KeyDown += KeyHandler;
+                    timeSinceCursor.Restart();
+                    showingCursor = true;
+                }
+                else
+                {
+                    window.TextInput -= TextInputHandler;
+                    window.KeyDown -= KeyHandler;
+                }
+            }
+        }
+
         public void AddText(string input)
         {
             previousString = text;

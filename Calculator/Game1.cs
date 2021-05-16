@@ -18,6 +18,7 @@ namespace Calculator
         private int lines = 0;
         private List<List<Vector2>> allEquations = new List<List<Vector2>>();
         private List<Tuple<InputBox, List<Vector2>>> inputButtons;
+        private Vector2 lastUpdate = new Vector2();
 
         public Game1()
         {
@@ -29,12 +30,12 @@ namespace Calculator
             _graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
             _graphics.IsFullScreen = true;
             _graphics.ApplyChanges();
-            allEquations.Add(new List<Vector2>());
-            Equation(allEquations[0], -40, 80);
-            allEquations.Add(new List<Vector2>());
-            OtherEquation(allEquations[1], -40, 80);
-            allEquations.Add(new List<Vector2>());
-            SetEquation(allEquations[allEquations.Count - 1], -40, 80, "sin(yrad2deg)");
+            //allEquations.Add(new List<Vector2>());
+            //Equation(allEquations[0], -40, 80);
+            //allEquations.Add(new List<Vector2>());
+            //OtherEquation(allEquations[1], -40, 80);
+            //allEquations.Add(new List<Vector2>());
+            //SetEquation(allEquations[allEquations.Count - 1], -40, 80, "sin(yrad2deg)");
             input = "25y";
         }
 
@@ -74,10 +75,11 @@ namespace Calculator
                     inputButtons[i].Item1.Selected(Window);
                     if (inputButtons[i].Item1.Modified())
                     {
-                        List<Vector2> temp = new List<Vector2>();
                         try
                         {
-                            SetEquation(temp, -40, 80, inputButtons[i].Item1.text);
+                            List<Vector2> temp = new List<Vector2>();
+                            //SetEquation(temp, -40, 80, inputButtons[i].Item1.text);
+                            DrawEquationOverScren(temp, inputButtons[i].Item1.text);
                             inputButtons[i].Item2.Clear();
                             for (int a = 0; a < temp.Count; a++)
                             {
@@ -92,6 +94,30 @@ namespace Calculator
                         }
                     }
                 }
+                if (AdvancedMath.Vector2Distance(lastUpdate, position) > 50 * 2)
+                {
+                    for (int i = 0; i < inputButtons.Count; i++)
+                    {
+                        try
+                        {
+                            List<Vector2> temp = new List<Vector2>();
+                            //SetEquation(temp, -40, 80, inputButtons[i].Item1.text);
+                            DrawEquationOverScren(temp, inputButtons[i].Item1.text);
+                            inputButtons[i].Item2.Clear();
+                            for (int a = 0; a < temp.Count; a++)
+                            {
+                                inputButtons[i].Item2.Add(temp[a]);
+                            }
+                            inputButtons[i].Item1.modifiedText = false;
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.WriteLine("Failed to update graph: " + e.Message);
+                            inputButtons[i].Item2.Clear();
+                        }
+                    }
+                    lastUpdate = position;
+                }
                 // TODO: Add your update logic here
                 camera.Zoom = (float)(Input.clampedScrollWheelValue * 0.001) + 1;
                 camera.UpdateCamera(position);
@@ -99,6 +125,13 @@ namespace Calculator
             }
             else
             {
+                for (int i = 0; i < inputButtons.Count; i++)
+                {
+                    if (inputButtons[i].Item1.Selected(Window))
+                    {
+                        inputButtons[i].Item1.SetSelected(Window, false);
+                    }
+                }
                 Input.GetState(false);
                 lastMousePosition = Input.MousePos();
             }
@@ -181,13 +214,14 @@ namespace Calculator
             //    }
             //}
             _spriteBatch.End();
+            Vector2 offset = new Vector2(0, 300);
             _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp);
-            _spriteBatch.DrawString(font, "pos: " + position.ToString(), new Vector2(5, 5), Color.Red);
-            _spriteBatch.DrawString(font, "mousePos: " + Input.MousePos().ToString(), new Vector2(5, 25), Color.Red);
-            _spriteBatch.DrawString(font, "lines: " + lines.ToString(), new Vector2(5, 45), Color.Red);
-            _spriteBatch.DrawString(font, "rest: " + (camera.ScreenToWorldSpace(new Vector2()).Y % width).ToString(), new Vector2(5, 65), Color.Red);
-            _spriteBatch.DrawString(font, "nearest: " + (AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).Y), size)).ToString(), new Vector2(5, 85), Color.Red);
-            _spriteBatch.DrawString(font, "zoom: " + (camera.Zoom).ToString(), new Vector2(5, 105), Color.Red);
+            _spriteBatch.DrawString(font, "pos: " + position.ToString(), new Vector2(5, 5) + offset, Color.Red);
+            _spriteBatch.DrawString(font, "mousePos: " + Input.MousePos().ToString(), new Vector2(5, 25) + offset, Color.Red);
+            _spriteBatch.DrawString(font, "lines: " + lines.ToString(), new Vector2(5, 45) + offset, Color.Red);
+            _spriteBatch.DrawString(font, "rest: " + (camera.ScreenToWorldSpace(new Vector2()).Y % width).ToString(), new Vector2(5, 65) + offset, Color.Red);
+            _spriteBatch.DrawString(font, "nearest: " + (AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).Y), size)).ToString(), new Vector2(5, 85) + offset, Color.Red);
+            _spriteBatch.DrawString(font, "zoom: " + (camera.Zoom).ToString(), new Vector2(5, 105) + offset, Color.Red);
             for (int i = 0; i < inputButtons.Count; i++)
             {
                 inputButtons[i].Item1.Draw(_spriteBatch, font);
@@ -221,6 +255,7 @@ namespace Calculator
 
         private void DrawGrid(int gridSize, int lineWidth)
         {
+            //Horiziontal lines
             for (int i = AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).Y), gridSize); i < AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, Window.ClientBounds.Height)).Y), gridSize) + gridSize; i += gridSize)
             {
                 int myLineWidth = i / gridSize % 5 == 0 ? i / gridSize % 25 == 0 ? lineWidth * 2 : lineWidth : lineWidth / 2;
@@ -233,6 +268,7 @@ namespace Calculator
                 {
                 }
             }
+            // Vertical lines
             int vertical = 0;
             for (int i = AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).X), gridSize); i < AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(Window.ClientBounds.Width, 0)).X), gridSize) + gridSize; i += gridSize)
             {
@@ -285,9 +321,10 @@ namespace Calculator
             curEquation.Clear();
             int width = 50;
             iterations += start;
+            float timeSteps = 0.125f;
             if (!AdvancedMath.ContainsNewCons(expression, 'y'))
             {
-                for (float x = start; x <= iterations; x += 0.25f)
+                for (float x = start; x <= iterations; x += timeSteps)
                 {
                     string newExpress = AdvancedMath.ReplaceXWithConstant(expression, x, "x");
                     curEquation.Add(new Vector2(x * width, -((float)AdvancedMath.Eval(newExpress) * width)));
@@ -295,12 +332,80 @@ namespace Calculator
             }
             else
             {
-                for (float y = start; y <= iterations; y += 0.25f)
+                try
                 {
-                    string newExpress = AdvancedMath.ReplaceXWithConstant(expression, y, "y");
-                    curEquation.Add(new Vector2(((float)AdvancedMath.Eval(newExpress) * width), -y * width));
+                    for (float y = start; y <= iterations; y += timeSteps)
+                    {
+                        string newExpress = AdvancedMath.ReplaceXWithConstant(expression, y, "y");
+                        curEquation.Add(new Vector2(((float)AdvancedMath.Eval(newExpress) * width), -y * width));
+                    }
+                    AdvancedMath.ResetX();
                 }
-                AdvancedMath.ResetX();
+                catch (Exception)
+                {
+                    AdvancedMath.ResetX();
+                    throw;
+                }
+            }
+        }
+
+        private void SetEquation(List<Vector2> curEquation, int start, int iterations, string expression, float timeSteps)
+        {
+            curEquation.Clear();
+            int width = 50;
+            iterations += start;
+            if (!AdvancedMath.ContainsNewCons(expression, 'y'))
+            {
+                for (float x = start; x <= iterations; x += timeSteps)
+                {
+                    string newExpress = AdvancedMath.ReplaceXWithConstant(expression, x, "x");
+                    curEquation.Add(new Vector2(x * width, -((float)AdvancedMath.Eval(newExpress) * width)));
+                }
+            }
+            else
+            {
+                try
+                {
+                    for (float y = start; y <= iterations; y += timeSteps)
+                    {
+                        string newExpress = AdvancedMath.ReplaceXWithConstant(expression, y, "y");
+                        curEquation.Add(new Vector2(((float)AdvancedMath.Eval(newExpress) * width), -y * width));
+                    }
+                    AdvancedMath.ResetX();
+                }
+                catch (Exception)
+                {
+                    AdvancedMath.ResetX();
+                    throw;
+                }
+            }
+        }
+
+        private void DrawEquationOverScren(List<Vector2> curEquation, string expression)
+        {
+            int gridSize = 50;
+            if (!AdvancedMath.ContainsNewCons(expression, 'y'))
+            {
+                int width = (int)Math.Round(Window.ClientBounds.Width * camera.Zoom / gridSize, MidpointRounding.AwayFromZero);
+                width = (int)Math.Round(Math.Abs(camera.ScreenToWorldSpace(new Vector2(Window.ClientBounds.Width, 0)).X) / gridSize, MidpointRounding.AwayFromZero);
+                //int width = (AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, Window.ClientBounds.Height)).Y), gridSize) + gridSize) - AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).X), gridSize);
+                //if (camera.CameraPos().X > 0)
+                //{
+                //    //width = (AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, Window.ClientBounds.Height)).Y), gridSize) + gridSize) + AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).X), gridSize);
+                //    width = AdvancedMath.GetNearestMultiple(50 * Window.ClientBounds.Width, gridSize);
+                //}
+                int start = ((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, 0)).X / gridSize, MidpointRounding.AwayFromZero));
+                SetEquation(curEquation, start - 50, Math.Abs(width - start) + 50 * 2, expression, 1f / (camera.Zoom * 2.5f));
+            }
+            else
+            {
+                //int height = (AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(Window.ClientBounds.Width, 0)).X), gridSize) + gridSize) - AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).X), gridSize);
+                //int height = AdvancedMath.GetNearestMultiple(50 * Window.ClientBounds.Height, gridSize);
+                //int height = Window.ClientBounds.Height / gridSize;
+                //SetEquation(curEquation, AdvancedMath.GetNearestMultiple((int)Math.Round(camera.ScreenToWorldSpace(new Vector2()).X), gridSize) / gridSize, height / gridSize, expression);
+                int height = (int)Math.Round(Math.Abs(camera.ScreenToWorldSpace(new Vector2(0, Window.ClientBounds.Height)).Y) / gridSize, MidpointRounding.AwayFromZero);
+                int start = ((int)Math.Round(camera.ScreenToWorldSpace(new Vector2(0, 0)).Y / gridSize, MidpointRounding.AwayFromZero));
+                SetEquation(curEquation, start - 50, Math.Abs(height - start) + 50 * 2, expression);
             }
         }
 
